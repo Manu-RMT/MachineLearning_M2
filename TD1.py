@@ -3,6 +3,8 @@ from prepdata import *
 from sklearn.model_selection import StratifiedKFold,train_test_split
 from sklearn import svm
 from sklearn.metrics import accuracy_score
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.over_sampling import RandomOverSampler
 # nom des datasets
 all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
                  "australian","balance","bankmarketing","bupa","german","glass",
@@ -14,8 +16,19 @@ for i in all_datasets_name:
     dfs[i]=data_recovery(i)
     
 
-df_abalone8 = data_recovery("glass")
+df_abalone8 = data_recovery("abalone8")
+
 x_abalone8,y_abalone8 = df_abalone8  
+
+# sous echantillonage (suppression de données majoritaires)
+rus = RandomUnderSampler(sampling_strategy=0.25) # pour 100 data majoritaire on aura 25 data minoritaires
+#x_rus,y_rus = rus.fit_resample(x_abalone8, y_abalone8)
+
+
+# sur echantillonage ( ajout de données minoritaires)
+ros = RandomOverSampler(sampling_strategy=0.25) # pour 100 data majoritaire on aura 25 data minoritaires
+x_ros,y_ros = ros.fit_resample(x_abalone8, y_abalone8)
+
 #taille abalone8 
 taille_abalone8 = len(y_abalone8)
 
@@ -32,9 +45,9 @@ skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=True)
 for hp in hyper_param:
     moyenne_k_fold = []
     for i, (train_index, test_index) in enumerate(skf.split(x_train, y_train)):
-        print(f"Fold {i}:")
-        print(f"  Train: index={train_index}")
-        print(f"  Test:  index={test_index}")
+        # print(f"Fold {i}:")
+        # print(f"  Train: index={train_index}")
+        # print(f"  Test:  index={test_index}")
         x_learn = x_train[train_index]
         y_learn = y_train[train_index]
         x_valid = x_train[test_index]
@@ -56,6 +69,6 @@ index_meilleur_moyenne_hyperparam = score_moyen_fold_par_hyperparam.index(max(sc
 value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
 print(f"Meilleur Hyper paramètre : {value_hyper_param} ")
 
-accuracy_per_tour.append(value_hyper_param)
+#accuracy_per_tour.append(value_hyper_param)
 
 
