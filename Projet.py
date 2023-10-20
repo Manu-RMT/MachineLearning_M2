@@ -16,7 +16,7 @@ from ModuleFonction import *
 #                   "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # "bankmarketing","australian", "pageblocks", 
-all_datasets_name = ["abalone8"]
+all_datasets_name = ["australian"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
 # liste contenant tous les datasets
@@ -26,16 +26,25 @@ for name in all_datasets_name:
     stock_resultat[name] = {}
     # repartition de y
     stock_resultat[name]["repartition_y"] =  dfs[name][1].mean()
-    # dataset équilibré ?
+    #
+    stock_resultat[name]["major_mino"] =  (dfs[name][1].mean() * len(dfs[name][1])) /  ((1-dfs[name][1].mean()) * len(dfs[name][1]))
+   
+    
+    
     if dfs[name][1].mean() < 0.2 or dfs[name][1].mean() > 0.8 :
-        stock_resultat[name]["équilibré"] = False
+        stock_resultat[name]["équilibré"] = False # désiquilibré
+        
     else : 
         stock_resultat[name]["équilibré"] = True
     
+    # x_equilibre, y_equilibre = reequilibrage
+    #  dfs["australian"]= ( dfs["australian"][0], dfs["australian"][1], [0.5]) 
+   
+    #dfs["australian"]=(['0'])
     # sous
     
     # SVM linear
-    #stock_resultat[name]['SVM linear'] =  SVM_Test(dfs[name],name)
+    stock_resultat[name]['SVM linear'] =  SVM_Test(dfs[name],name)
     # Algorithme 2
 
 

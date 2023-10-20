@@ -24,7 +24,13 @@ def remplace_value_biaise_nan(data, type_data):
     return data
 
 
-def SVM_Test(df_data,datasets_name,kernel_type="linear"):
+    
+def reequilibrage(df_data, type_equilibrage,major_minor): 
+    # sampling_strategy = faut que ce soit égale à un 0.9 * major_minor => permet de diminier le désequilibrage de 10%
+    
+    return df_data    
+
+def SVM_Test(df_data,datasets_name,kernel_type="linear"):   
     score_per_datasets = {}
     
     # split les données 30% en test et 70% en entrainement
@@ -57,10 +63,13 @@ def SVM_Test(df_data,datasets_name,kernel_type="linear"):
             moyenne_k_fold.append(accuracy_score(y_valid, y_predict))
         # Moyenne de chaque fold par hyperparamètre
         score_moyen_fold_par_hyperparam.append(sum(moyenne_k_fold)/len(moyenne_k_fold))    
-
+    
     # Meilleur Hyper Paramètre
     meilleur_moyenne = max(score_moyen_fold_par_hyperparam)
     index_meilleur_moyenne_hyperparam = score_moyen_fold_par_hyperparam.index(max(score_moyen_fold_par_hyperparam))
     value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
     print (f"Meilleur Hyper paramètre pour {datasets_name} : {value_hyper_param} ")
+    
+    
+  
     return value_hyper_param

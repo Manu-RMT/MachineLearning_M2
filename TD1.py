@@ -4,7 +4,7 @@ from sklearn.model_selection import StratifiedKFold,train_test_split
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
-from imblearn.over_sampling import RandomOverSampler
+from imblearn.over_sampling import RandomOverSampler,SMOTE
 # nom des datasets
 all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
                  "australian","balance","bankmarketing","bupa","german","glass",
@@ -25,9 +25,15 @@ rus = RandomUnderSampler(sampling_strategy=0.25) # pour 100 data majoritaire on 
 #x_rus,y_rus = rus.fit_resample(x_abalone8, y_abalone8)
 
 
-# sur echantillonage ( ajout de données minoritaires)
+# sur echantillonage RandomOverSampler ( ajout de données minoritaires)
 ros = RandomOverSampler(sampling_strategy=0.25) # pour 100 data majoritaire on aura 25 data minoritaires
 x_ros,y_ros = ros.fit_resample(x_abalone8, y_abalone8)
+
+
+# sur echantillonage SMOTE ( ajout de données minoritaires)
+sm = SMOTE(sampling_strategy=0.25) # pour 100 data majoritaire on aura 25 data minoritaires
+x_sm,y_sm = ros.fit_resample(x_abalone8, y_abalone8)
+
 
 #taille abalone8 
 taille_abalone8 = len(y_abalone8)
