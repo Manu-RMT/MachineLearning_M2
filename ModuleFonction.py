@@ -24,32 +24,32 @@ def remplace_value_biaise_nan(data, type_data):
     return data
 
 
-def train_test(data):
+def SVM_Test(df_data,datasets_name,kernel_type="linear"):
+    score_per_datasets = {}
+    
     # split les données 30% en test et 70% en entrainement
-    y_data = data['cartevpr'] # y = ce qu'on veut deviner   
-    x_data = data.drop(columns=["cartevpr"]) # x= data pour deviner
+    x_data,y_data = df_data  
     x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
-    print(x_train, x_test, y_train, y_test)
-    return True
-    #k fold
+    
+    #k fold (k ici = 5)
     score_moyen_fold_par_hyperparam = []
     # faut donner une grille hyperparametre
     hyper_param = [1,2,4,6,10,12,16]
-    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=True)
+    skf = StratifiedKFold(n_splits= 5, random_state=None, shuffle=True)
     
     for hp in hyper_param:
         moyenne_k_fold = []
         for i, (train_index, test_index) in enumerate(skf.split(x_train, y_train)):
-            print(f"Fold {i}:")
-            print(f"  Train: index={train_index}")
-            print(f"  Test:  index={test_index}")
+            # print(f"Fold {i}:")
+            # print(f"  Train: index={train_index}")
+            # print(f"  Test:  index={test_index}")
             x_learn = x_train[train_index]
             y_learn = y_train[train_index]
             x_valid = x_train[test_index]
             y_valid = y_train[test_index]
             
-
-            clf = svm.SVC(C=hp,kernel="linear")
+            # test modèle avec le meilleur hyperparamètre 
+            clf = svm.SVC(C=hp,kernel=kernel_type)
             clf.fit(x_learn,y_learn)
             # phase de prediction 
             y_predict = clf.predict(x_valid)
@@ -62,4 +62,5 @@ def train_test(data):
     meilleur_moyenne = max(score_moyen_fold_par_hyperparam)
     index_meilleur_moyenne_hyperparam = score_moyen_fold_par_hyperparam.index(max(score_moyen_fold_par_hyperparam))
     value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
-    print(f"Meilleur Hyper paramètre : {value_hyper_param} ")
+    print (f"Meilleur Hyper paramètre pour {datasets_name} : {value_hyper_param} ")
+    return value_hyper_param
