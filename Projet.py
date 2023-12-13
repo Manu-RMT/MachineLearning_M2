@@ -19,23 +19,41 @@ from ModuleFonction import *
 all_datasets_name = ["australian"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
+
 # liste contenant tous les datasets
 dfs = {}
+# datasets équilibré
+dfs_equilibre = {}
+# datasets désiquilibré
+dfs_désequilibré = {}
+
 for name in all_datasets_name:
     dfs[name]=data_recovery(name)
     stock_resultat[name] = {}
     # repartition de y
     stock_resultat[name]["repartition_y"] =  dfs[name][1].mean()
-    #
-    stock_resultat[name]["major_mino"] =  (dfs[name][1].mean() * len(dfs[name][1])) /  ((1-dfs[name][1].mean()) * len(dfs[name][1]))
-   
+    # major sur minor
+    major_minor = (dfs[name][1].mean() * len(dfs[name][1])) /  ((1-dfs[name][1].mean()) * len(dfs[name][1]))
+    stock_resultat[name]["major_mino"] =  major_minor
     
     
+    # SVM linear sur tous les datasets
+    stock_resultat[name]['SVM linear'] =  SVM_Test(dfs[name],name)
+    
+    # datasets déséquilibré et équilibré
     if dfs[name][1].mean() < 0.2 or dfs[name][1].mean() > 0.8 :
-        stock_resultat[name]["équilibré"] = False # désiquilibré
+        stock_resultat[name]["équilibré"] = False # tableau des résultat désiquilibré
+        if(dfs[name][1].mean() < 0.25) :
+            type_equilibrage = "sur_echanti"
+        else :
+            type_equilibrage = 'sous_echanti'
+            
+        dfs_désequilibré[name] = reequilibrage(data_recovery(name), type_equilibrage, major_minor)  
         
     else : 
-        stock_resultat[name]["équilibré"] = True
+        stock_resultat[name]["équilibré"] = True  # tableau des résultat équilibré
+        dfs_equilibre[name] = data_recovery(name)
+    
     
     # x_equilibre, y_equilibre = reequilibrage
     #  dfs["australian"]= ( dfs["australian"][0], dfs["australian"][1], [0.5]) 
@@ -43,8 +61,7 @@ for name in all_datasets_name:
     #dfs["australian"]=(['0'])
     # sous
     
-    # SVM linear
-    stock_resultat[name]['SVM linear'] =  SVM_Test(dfs[name],name)
+   
     # Algorithme 2
 
 

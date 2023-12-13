@@ -32,7 +32,7 @@ x_ros,y_ros = ros.fit_resample(x_abalone8, y_abalone8)
 
 # sur echantillonage SMOTE ( ajout de données minoritaires)
 sm = SMOTE(sampling_strategy=0.25) # pour 100 data majoritaire on aura 25 data minoritaires
-x_sm,y_sm = ros.fit_resample(x_abalone8, y_abalone8)
+x_sm,y_sm = sm.fit_resample(x_abalone8, y_abalone8)
 
 
 #taille abalone8 

@@ -7,6 +7,8 @@ Created on Mon Oct 16 09:35:36 2023
 
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import StratifiedKFold,train_test_split
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.over_sampling import RandomOverSampler,SMOTE
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 import numpy as np
@@ -26,11 +28,21 @@ def remplace_value_biaise_nan(data, type_data):
 
     
 def reequilibrage(df_data, type_equilibrage,major_minor): 
-    # sampling_strategy = faut que ce soit égale à un 0.9 * major_minor => permet de diminier le désequilibrage de 10%
+    x_data,y_data = df_data
     
-    return df_data    
+    # sampling_strategy = faut que ce soit égale à un 0.9 * major_minor => permet de diminier le désequilibrage de 10%
+    if type_equilibrage == "sur_echanti":
+        # sur echantillonage SMOTE ( ajout de données minoritaires)
+        sm = SMOTE(sampling_strategy=0.9 * major_minor) # pour 100 data majoritaire on aura 25 data minoritaires
+        x_df,y_df = sm.fit_resample(x_data, y_data)
+    else:    
+        # sous echantillonage (suppression de données majoritaires)
+        rus = RandomUnderSampler(sampling_strategy=0.9 * major_minor) # pour 100 data majoritaire on aura 25 data minoritaires
+        x_df,y_df = rus.fit_resample(x_data, y_data)
+    
+    return x_df,y_df
 
-def SVM_Test(df_data,datasets_name,kernel_type="linear"):   
+def SVM_Test(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False):   
     score_per_datasets = {}
     
     # split les données 30% en test et 70% en entrainement
