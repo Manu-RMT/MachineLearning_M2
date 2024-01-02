@@ -16,7 +16,7 @@ from ModuleFonction import *
 #                   "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # "bankmarketing","australian", "pageblocks", 
-all_datasets_name = ["abalone17"]
+all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
 
@@ -39,7 +39,7 @@ for name in all_datasets_name:
     
     
     # SVM linear sur tous les datasets
-    stock_resultat[name]['SVM linear'] =  SVM_Test(dfs[name],name)
+    stock_resultat[name]['SVM linear'] =  SVM_Linear(dfs[name],name)
     
     
     # datasets déséquilibré et équilibré
@@ -49,12 +49,12 @@ for name in all_datasets_name:
             type_equilibrage = "sur_echanti"
         else :
             type_equilibrage = 'sous_echanti'
-            
-        # dfs_désequilibré[name] = reequilibrage(data_recovery(name), type_equilibrage, major_minor)  
+        dfs[name] = reequilibrage(dfs[name], type_equilibrage, major_minor)
+        stock_resultat[name]['type equilibrage'] = type_equilibrage  
         
     else : 
         stock_resultat[name]["équilibré"] = True  # tableau des résultat équilibré
-        dfs_equilibre[name] = data_recovery(name)
+        
     
     
     # x_equilibre, y_equilibre = reequilibrage
@@ -63,5 +63,14 @@ for name in all_datasets_name:
     #dfs["australian"]=(['0'])
     # sous
     
-   
-    # Algorithme 2
+    # knn 
+    stock_resultat[name]['knn'] = Knn(dfs[name], name)
+    
+    # Arbre de décisions
+    stock_resultat[name]['forets aleatoires'] = Arbre_de_decision(dfs[name], name)
+    
+    # Adaboost
+    stock_resultat[name]['Adaboost'] = Adaboost(dfs[name], name)
+    
+    # Gradient Boosting 
+    stock_resultat[name]['Gradient Boosting'] = GradientBoosting(dfs[name], name)

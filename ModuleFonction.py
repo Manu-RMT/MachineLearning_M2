@@ -5,13 +5,20 @@ Created on Mon Oct 16 09:35:36 2023
 @author: mramanitra
 """
 
+from numpy import mean
+from numpy import std
+import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import StratifiedKFold,train_test_split
-from imblearn.under_sampling import RandomUnderSampler
-from imblearn.over_sampling import RandomOverSampler,SMOTE
+from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.tree import DecisionTreeClassifier
 from sklearn import svm
 from sklearn.metrics import accuracy_score
-import numpy as np
+from sklearn.neighbors import KNeighborsRegressor
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.over_sampling import RandomOverSampler,SMOTE
 
 
 # Si numérique => on fait moyenne 
@@ -33,16 +40,16 @@ def reequilibrage(df_data, type_equilibrage,major_minor):
     # sampling_strategy = faut que ce soit égale à un 0.9 * major_minor => permet de diminier le désequilibrage de 10%
     if type_equilibrage == "sur_echanti":
         # sur echantillonage SMOTE ( ajout de données minoritaires)
-        sm = SMOTE(sampling_strategy=0.9 * major_minor) # pour 100 data majoritaire on aura 25 data minoritaires
+        sm = SMOTE() # pour 100 data majoritaire on aura 25 data minoritaires
         x_df,y_df = sm.fit_resample(x_data, y_data)
     else:    
         # sous echantillonage (suppression de données majoritaires)
-        rus = RandomUnderSampler(sampling_strategy=0.9 * major_minor) # pour 100 data majoritaire on aura 25 data minoritaires
+        rus = RandomUnderSampler(sampling_strategy=0.9 + major_minor) # pour 100 data majoritaire on aura 25 data minoritaires
         x_df,y_df = rus.fit_resample(x_data, y_data)
     
     return x_df,y_df
 
-def SVM_Test(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False):   
+def SVM_Linear(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False):   
     score_per_datasets = {}
     
     # split les données 30% en test et 70% en entrainement
@@ -82,6 +89,78 @@ def SVM_Test(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False):
     value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
     print (f"Meilleur Hyper paramètre pour {datasets_name} : {value_hyper_param} ")
     
-    
-  
     return value_hyper_param
+
+
+def Adaboost(df_data, datasets_name):
+    accu_train_ada = []
+    accu_test_ada = []
+    score_moyen_adaboost={}
+    
+    for i in range(1,10):
+        x_data,y_data = df_data
+        x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
+        # ADABOOST
+        #train
+        clf = AdaBoostClassifier(n_estimators=100).fit(x_train, y_train)
+        y_pred_train_ada = clf.predict(x_train)
+        accu_train_ada.append(accuracy_score(y_train, y_pred_train_ada))
+        
+        #test
+        clf = AdaBoostClassifier(n_estimators=100).fit(x_test, y_test)
+        y_pred_test_ada = clf.predict(x_test)
+        accu_test_ada.append(accuracy_score(y_test, y_pred_test_ada))
+    
+    score_moyen_adaboost['train'] = (sum(accu_train_ada)/len(accu_train_ada))
+    score_moyen_adaboost['test'] = (sum(accu_test_ada)/len(accu_test_ada))  
+    print (f"Score Adaboost pour {datasets_name} : {score_moyen_adaboost['test']} ")
+    
+    return score_moyen_adaboost['test']
+
+
+def GradientBoosting(df_data, datasets_name):
+    x_data,y_data = df_data
+    x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
+    
+    # define the model
+    model = GradientBoostingClassifier()
+   # define the evaluation method
+    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    # evaluate the model on the dataset
+    n_scores = cross_val_score(model, x_test, y_test, scoring='accuracy', cv=cv, n_jobs=-1)
+    # report performance (moyenne et écart type)
+    print('Score GradientBoosting pour %s : %.3f (%.3f)' % (datasets_name,mean(n_scores), std(n_scores)))
+    
+    return mean(n_scores)
+
+def Arbre_de_decision(df_data, datasets_name):
+    x_data,y_data = df_data
+    x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
+    
+    # define the model
+    model = DecisionTreeClassifier()
+    # define the evaluation method
+    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    # evaluate the model on the dataset
+    n_scores = cross_val_score(model, x_test, y_test, scoring='roc_auc', cv=cv, n_jobs=-1)
+    # report performance (moyenne et écart type)
+    print('Score arbre_de_decision pour %s : %.3f (%.3f)' % (datasets_name, mean(n_scores), std(n_scores)))
+    
+    return mean(n_scores)
+
+def Knn(df_data, datasets_name):
+    value_knn = []
+    for i in range(1,10):
+        x_data,y_data = df_data
+        x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
+        knn = KNeighborsRegressor(n_neighbors=10)               
+        knn.fit(x_train,y_train)
+        predictions = knn.predict(x_test)
+    
+        score = knn.score(x_test, y_test)
+        value_knn.append(score)
+    mean_score = sum(value_knn) / len(value_knn)
+    print('Score knn pour %s : %.3f' % (datasets_name, mean_score))
+        
+    return mean_score
+        
