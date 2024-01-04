@@ -8,18 +8,23 @@ Created on Mon Oct 16 09:35:36 2023
 from numpy import mean
 from numpy import std
 import numpy as np
+from sklearn.exceptions import ConvergenceWarning
+from sklearnex import patch_sklearn 
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import StratifiedKFold,train_test_split
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import LinearSVC
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsRegressor
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler,SMOTE
 
+patch_sklearn()
+ConvergenceWarning('ignore')
 
 # Si numérique => on fait moyenne 
 # Si alphabétique => rempalcer par la plus grande occurence
@@ -59,7 +64,7 @@ def SVM_Linear(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False
     #k fold (k ici = 5)
     score_moyen_fold_par_hyperparam = []
     # faut donner une grille hyperparametre
-    hyper_param = [1,2,4,6,10,12,16]
+    hyper_param = [1,2,4,6,10,12,16,18,20]
     skf = StratifiedKFold(n_splits= 5, random_state=None, shuffle=True)
     
     for hp in hyper_param:
@@ -73,11 +78,17 @@ def SVM_Linear(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False
             x_valid = x_train[test_index]
             y_valid = y_train[test_index]
             
-            # test modèle avec le meilleur hyperparamètre 
-            clf = svm.SVC(C=hp,kernel=kernel_type)
+            # TROP LONG
+            # # test modèle avec le meilleur hyperparamètre 
+            # clf = svm.SVC(C=hp,kernel=kernel_type)
+            # clf.fit(x_learn,y_learn)
+            # # phase de prediction 
+            # y_predict = clf.predict(x_valid)    
+            
+            clf = LinearSVC(C=hp,tol=1e-4, max_iter=100)
             clf.fit(x_learn,y_learn)
-            # phase de prediction 
             y_predict = clf.predict(x_valid)
+            
             # moyenne de chaque fold
             moyenne_k_fold.append(accuracy_score(y_valid, y_predict))
         # Moyenne de chaque fold par hyperparamètre
@@ -170,11 +181,21 @@ def affichage_resultat(tab_resultat):
     print(" Datasets ----- SVM linear ----- KNN ----- B-tree ---- adaboost ---- gradient boosting ")
     print("---------------------------------------------------------------------------------------")
     
+    num_svm = 0
+    num_knn = 0
+    num_arb = 0
+    num_ada = 0 
+    num_grad = 0
     for dataset_name, res in tab_resultat.items():
         svm_linear_value = res["SVM linear"]
+        num_svm = num_svm + svm_linear_value
         knn_value = res["knn"]
+        num_knn = num_knn + knn_value
         arbre_decision_value = res["forets aleatoires"]
+        num_arb = num_arb + arbre_decision_value
         adaboost_value = res["Adaboost"]
+        num_ada = num_ada + adaboost_value
         gradient_boosting_value = res["Gradient Boosting"]
+        num_grad = num_grad + gradient_boosting_value
         print(" %s ---- %f ------ %f --- %f ---- %f ------ %f " %(dataset_name,svm_linear_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value))
-   
+    print("---------------------------------------------------------------------------------------")

@@ -5,10 +5,10 @@ from sklearn import svm
 from sklearn.metrics import accuracy_score
 from ModuleFonction import *
 # nom des datasets
-# all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
-#                   "australian","balance","bankmarketing","bupa","german","glass",
-#                   "hayes","heart","iono","libras",'newthyroid',"pageblocks","pima","satimage","sonar",
-#                    "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
+all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
+                  "australian","balance","bankmarketing","bupa","german","glass",
+                  "hayes","heart","iono","libras",'newthyroid',"pageblocks","pima","satimage","sonar",
+                    "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 #                   "balance","bupa","german","glass",
@@ -16,7 +16,7 @@ from ModuleFonction import *
 #                   "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # "bankmarketing","australian", "pageblocks", 
-all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
+all_datasets_name = ["abalone8","abalone17"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
 
@@ -66,5 +66,6 @@ for name in all_datasets_name:
     
     # Gradient Boosting 
     stock_resultat[name]['Gradient Boosting'] = GradientBoosting(dfs[name], name)
-    
+
+
 affichage_resultat(stock_resultat)
