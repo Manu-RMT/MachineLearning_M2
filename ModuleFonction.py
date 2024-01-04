@@ -44,7 +44,7 @@ def reequilibrage(df_data, type_equilibrage,major_minor):
         x_df,y_df = sm.fit_resample(x_data, y_data)
     else:    
         # sous echantillonage (suppression de données majoritaires)
-        rus = RandomUnderSampler(sampling_strategy=0.9 + major_minor) # pour 100 data majoritaire on aura 25 data minoritaires
+        rus = RandomUnderSampler() # pour 100 data majoritaire on aura 25 data minoritaires
         x_df,y_df = rus.fit_resample(x_data, y_data)
     
     return x_df,y_df
@@ -163,4 +163,18 @@ def Knn(df_data, datasets_name):
     print('Score knn pour %s : %.3f' % (datasets_name, mean_score))
         
     return mean_score
-        
+
+
+def affichage_resultat(tab_resultat):
+    print("---------------------------------------------------------------------------------------")
+    print(" Datasets ----- SVM linear ----- KNN ----- B-tree ---- adaboost ---- gradient boosting ")
+    print("---------------------------------------------------------------------------------------")
+    
+    for dataset_name, res in tab_resultat.items():
+        svm_linear_value = res["SVM linear"]
+        knn_value = res["knn"]
+        arbre_decision_value = res["forets aleatoires"]
+        adaboost_value = res["Adaboost"]
+        gradient_boosting_value = res["Gradient Boosting"]
+        print(" %s ---- %f ------ %f --- %f ---- %f ------ %f " %(dataset_name,svm_linear_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value))
+   

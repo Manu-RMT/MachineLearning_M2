@@ -42,7 +42,7 @@ for name in all_datasets_name:
     stock_resultat[name]['SVM linear'] =  SVM_Linear(dfs[name],name)
     
     
-    # datasets déséquilibré et équilibré
+    # datasets déséquilibré et équilibré&dxcx
     if repartition_y < 0.2 or repartition_y > 0.8 :
         stock_resultat[name]["équilibré"] = False # tableau des résultat désiquilibré
         if(repartition_y < 0.25) :
@@ -54,15 +54,7 @@ for name in all_datasets_name:
         
     else : 
         stock_resultat[name]["équilibré"] = True  # tableau des résultat équilibré
-        
-    
-    
-    # x_equilibre, y_equilibre = reequilibrage
-    #  dfs["australian"]= ( dfs["australian"][0], dfs["australian"][1], [0.5]) 
-   
-    #dfs["australian"]=(['0'])
-    # sous
-    
+        stock_resultat[name]['type equilibrage'] = ""   
     # knn 
     stock_resultat[name]['knn'] = Knn(dfs[name], name)
     
@@ -74,3 +66,5 @@ for name in all_datasets_name:
     
     # Gradient Boosting 
     stock_resultat[name]['Gradient Boosting'] = GradientBoosting(dfs[name], name)
+    
+affichage_resultat(stock_resultat)
