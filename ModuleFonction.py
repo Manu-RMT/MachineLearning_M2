@@ -54,7 +54,7 @@ def reequilibrage(df_data, type_equilibrage,major_minor):
     
     return x_df,y_df
 
-def SVM_Linear(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False):   
+def SVM(df_data,datasets_name,kernel_type):   
     score_per_datasets = {}
     
     # split les données 30% en test et 70% en entrainement
@@ -70,24 +70,25 @@ def SVM_Linear(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False
     for hp in hyper_param:
         moyenne_k_fold = []
         for i, (train_index, test_index) in enumerate(skf.split(x_train, y_train)):
-            # print(f"Fold {i}:")
-            # print(f"  Train: index={train_index}")
-            # print(f"  Test:  index={test_index}")
             x_learn = x_train[train_index]
             y_learn = y_train[train_index]
             x_valid = x_train[test_index]
             y_valid = y_train[test_index]
             
-            # TROP LONG
-            # # test modèle avec le meilleur hyperparamètre 
-            # clf = svm.SVC(C=hp,kernel=kernel_type)
-            # clf.fit(x_learn,y_learn)
-            # # phase de prediction 
-            # y_predict = clf.predict(x_valid)    
+            if kernel_type == "linear" :
+                clf = LinearSVC(C=hp,tol=1e-4, max_iter=100)
+                clf.fit(x_learn,y_learn)
+                y_predict = clf.predict(x_valid)
             
-            clf = LinearSVC(C=hp,tol=1e-4, max_iter=100)
-            clf.fit(x_learn,y_learn)
-            y_predict = clf.predict(x_valid)
+            else :
+                #TROP LONG
+                # test modèle avec le meilleur hyperparamètre 
+                clf = svm.SVC(C=hp,kernel=kernel_type)
+                clf.fit(x_learn,y_learn)
+                # phase de prediction 
+                y_predict = clf.predict(x_valid)    
+            
+            
             
             # moyenne de chaque fold
             moyenne_k_fold.append(accuracy_score(y_valid, y_predict))
@@ -100,7 +101,10 @@ def SVM_Linear(df_data,datasets_name,kernel_type="linear",avec_equilibrage=False
     value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
     print (f"Meilleur Hyper paramètre pour {datasets_name} : {value_hyper_param} ")
     
-    return value_hyper_param
+    return meilleur_moyenne
+
+
+
 
 
 def Adaboost(df_data, datasets_name):
@@ -176,9 +180,19 @@ def Knn(df_data, datasets_name):
     return mean_score
 
 
+def classement_par_algo(accuracy_values):
+    indices = list(range(len(accuracy_values)))
+    indices.sort(reverse = True, key=lambda x: accuracy_values[x])
+    output = [0] * len(indices)
+    for i, x in enumerate(indices):
+        output[x] = i
+    return output
+
+
+
 def affichage_resultat(tab_resultat):
     print("---------------------------------------------------------------------------------------")
-    print(" Datasets ----- SVM linear ----- KNN ----- B-tree ---- adaboost ---- gradient boosting ")
+    print(" rapport_maj_min ---- Datasets ----- SVM linear ----- SVM gauss ----- SVM poly ----- KNN ----- Arbre de décision ---- adaboost ---- gradient boosting ")
     print("---------------------------------------------------------------------------------------")
     
     num_svm = 0
@@ -186,8 +200,12 @@ def affichage_resultat(tab_resultat):
     num_arb = 0
     num_ada = 0 
     num_grad = 0
+    class_global = []
     for dataset_name, res in tab_resultat.items():
+        rapport_maj_min = res["major_mino"]
         svm_linear_value = res["SVM linear"]
+        svm_gauss_value = res["SVM gauss"]
+        svm_poly_value = res["SVM poly"]
         num_svm = num_svm + svm_linear_value
         knn_value = res["knn"]
         num_knn = num_knn + knn_value
@@ -197,7 +215,11 @@ def affichage_resultat(tab_resultat):
         num_ada = num_ada + adaboost_value
         gradient_boosting_value = res["Gradient Boosting"]
         num_grad = num_grad + gradient_boosting_value
-        print(" %s ---- %f ------ %f --- %f ---- %f ------ %f " %(dataset_name,svm_linear_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value))
+        valeurs = [svm_linear_value, svm_gauss_value, svm_poly_value, knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value]
+        class_global.append(classement_par_algo(valeurs))
+        print(" %f ---- %s ---- %f ---- %f ---- %f ------ %f --- %f ---- %f ------ %f " %(rapport_maj_min, dataset_name,svm_linear_value, svm_gauss_value, svm_poly_value, knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value))
+    class_final = [sum(x)/len(x) + 1  for x in zip(*class_global)] # moyenne des classements (+1 pour que les classements commence à 1 plutôt que 0)
+    print(class_final)
     print("---------------------------------------------------------------------------------------")
     # test = mean(tab_resultat(["SVM linear"])
     test2 = num_svm / len(tab_resultat)

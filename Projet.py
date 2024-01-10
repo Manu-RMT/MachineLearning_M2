@@ -1,9 +1,13 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 from prepdata import *
 from sklearn.model_selection import StratifiedKFold,train_test_split
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 from ModuleFonction import *
+
+patch_sklearn()
+ConvergenceWarning('ignore')
+
 # nom des datasets
 all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
                   "australian","balance","bankmarketing","bupa","german","glass",
@@ -16,7 +20,7 @@ all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 #                   "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # "bankmarketing","australian", "pageblocks", 
-all_datasets_name = ["abalone8","abalone17"]
+# all_datasets_name = ["abalone8","abalone17"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
 
@@ -52,8 +56,14 @@ for name in all_datasets_name:
         stock_resultat[name]["équilibré"] = True  # tableau des résultat équilibré
         stock_resultat[name]['type equilibrage'] = ""   
     
-      # SVM linear sur tous les datasets
-    stock_resultat[name]['SVM linear'] =  SVM_Linear(dfs[name],name)
+    # SVM poly sur tous les datasets
+    stock_resultat[name]['SVM poly'] =  SVM(dfs[name],name,"poly")
+    
+    # SVM gauss sur tous les datasets
+    stock_resultat[name]['SVM gauss'] =  SVM(dfs[name],name,"rbf")
+    
+    # SVM linear sur tous les datasets
+    stock_resultat[name]['SVM linear'] =  SVM(dfs[name],name,"linear")
         
     # knn 
     stock_resultat[name]['knn'] = Knn(dfs[name], name)
