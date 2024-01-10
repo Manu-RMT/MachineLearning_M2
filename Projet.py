@@ -37,15 +37,11 @@ for name in all_datasets_name:
     major_minor = (dfs[name][1].mean() * len(dfs[name][1])) /  ((1-repartition_y) * len(dfs[name][1]))
     stock_resultat[name]["major_mino"] =  major_minor
     
-    
-    # SVM linear sur tous les datasets
-    stock_resultat[name]['SVM linear'] =  SVM_Linear(dfs[name],name)
-    
-    
+       
     # datasets déséquilibré et équilibré&dxcx
     if repartition_y < 0.2 or repartition_y > 0.8 :
         stock_resultat[name]["équilibré"] = False # tableau des résultat désiquilibré
-        if(repartition_y < 0.25) :
+        if(repartition_y < 0.2) :
             type_equilibrage = "sur_echanti"
         else :
             type_equilibrage = 'sous_echanti'
@@ -55,6 +51,10 @@ for name in all_datasets_name:
     else : 
         stock_resultat[name]["équilibré"] = True  # tableau des résultat équilibré
         stock_resultat[name]['type equilibrage'] = ""   
+    
+      # SVM linear sur tous les datasets
+    stock_resultat[name]['SVM linear'] =  SVM_Linear(dfs[name],name)
+        
     # knn 
     stock_resultat[name]['knn'] = Knn(dfs[name], name)
     

@@ -199,3 +199,7 @@ def affichage_resultat(tab_resultat):
         num_grad = num_grad + gradient_boosting_value
         print(" %s ---- %f ------ %f --- %f ---- %f ------ %f " %(dataset_name,svm_linear_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value))
     print("---------------------------------------------------------------------------------------")
+    # test = mean(tab_resultat(["SVM linear"])
+    test2 = num_svm / len(tab_resultat)
+    print(test2)
+    # print(" %s ---- %f ------ %f --- %f ---- %f ------ %f " %(dataset_name,svm_linear_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value))
