@@ -22,6 +22,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsRegressor
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler,SMOTE
+from sklearn.metrics import confusion_matrix
 
 patch_sklearn()
 ConvergenceWarning('ignore')
@@ -54,6 +55,18 @@ def reequilibrage(df_data, type_equilibrage,major_minor):
     
     return x_df,y_df
 
+def calcul_fmesure(y_test,y_pred):
+        #Matrice de confusion
+        tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+        #Precision et rappel
+        precision = tp/(tp+fp)
+        rappel = tp/(tp+fn)
+        #F_mesure avec beta = 1 pour donner autant de poids au rappel et à la précision
+        f_mesure = (2*rappel*precision)/(precision+rappel)
+        return f_mesure
+        
+        
+        
 def SVM(df_data,datasets_name,kernel_type):   
     score_per_datasets = {}
     
@@ -87,8 +100,7 @@ def SVM(df_data,datasets_name,kernel_type):
                 clf.fit(x_learn,y_learn)
                 # phase de prediction 
                 y_predict = clf.predict(x_valid)    
-            
-            
+
             
             # moyenne de chaque fold
             moyenne_k_fold.append(accuracy_score(y_valid, y_predict))
@@ -101,7 +113,22 @@ def SVM(df_data,datasets_name,kernel_type):
     value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
     print (f"Meilleur Hyper paramètre pour {datasets_name} : {value_hyper_param} ")
     
-    return meilleur_moyenne
+    if kernel_type == "linear" :
+        clf = LinearSVC(C=value_hyper_param,tol=1e-4, max_iter=100)
+        clf.fit(x_learn,y_learn)
+        y_predict = clf.predict(x_test)
+    
+    else :
+        #TROP LONG
+        # test modèle avec le meilleur hyperparamètre 
+        clf = svm.SVC(C=value_hyper_param,kernel=kernel_type)
+        clf.fit(x_train,y_train)
+        # phase de prediction 
+        y_predict = clf.predict(x_test)  
+        
+    fmesure = calcul_fmesure(y_test,y_predict)
+    
+    return fmesure
 
 
 
@@ -125,6 +152,12 @@ def Adaboost(df_data, datasets_name):
         clf = AdaBoostClassifier(n_estimators=100).fit(x_test, y_test)
         y_pred_test_ada = clf.predict(x_test)
         accu_test_ada.append(accuracy_score(y_test, y_pred_test_ada))
+        
+        f_mesure = calcul_fmesure(y_test,y_pred_test_ada)
+    
+        
+
+        
     
     score_moyen_adaboost['train'] = (sum(accu_train_ada)/len(accu_train_ada))
     score_moyen_adaboost['test'] = (sum(accu_test_ada)/len(accu_test_ada))  
