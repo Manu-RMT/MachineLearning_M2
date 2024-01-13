@@ -17,7 +17,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import LinearSVC
 from sklearn import svm
 from sklearn.metrics import accuracy_score
-from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neighbors import KNeighborsClassifier
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler,SMOTE
 from sklearn.metrics import confusion_matrix
@@ -61,10 +61,26 @@ def calcul_fmesure(y_test,y_pred):
         #Matrice de confusion
         tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
         #Precision et rappel
-        precision = tp/(tp+fp)
-        rappel = tp/(tp+fn)
+        if (tp+fp) == 0 :
+            precision = 0 
+        else:
+          precision = tp/(tp+fp) 
+          
+        if (tp+fn) == 0 :
+            rappel = 0
+        else:
+            rappel = tp/(tp+fn)
+            
+        if (precision+rappel) == 0 :
+            f_mesure = 0
+        else:
+            f_mesure = (2*rappel*precision)/(precision+rappel)
+       
         #F_mesure avec beta = 1 pour donner autant de poids au rappel et à la précision
-        f_mesure = (2*rappel*precision)/(precision+rappel)
+        
+        
+       
+        
         return f_mesure
               
         
@@ -74,9 +90,9 @@ def SVM(df_data,datasets_name,kernel_type):
     
     score_per_datasets = {}
     f_mesures = []
-    
+   
     # split les données 30% en test et 70% en entrainement
-    for i in (1,10):
+    for i in range(1,11):        
         x_data,y_data = df_data  
         x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
         score_moyen_fold_par_hyperparam = []
@@ -127,11 +143,11 @@ def SVM(df_data,datasets_name,kernel_type):
             clf.fit(x_train,y_train)
             # phase de prediction 
             y_predict = clf.predict(x_test)  
-            
+        
         f_mesures.append(calcul_fmesure(y_test,y_predict))
-    
+
     f_mesure = mean(f_mesures)
-    std_f_mesure = std(f_mesures)
+    std_f_mesure = mean(f_mesures)
     score_accuracy = mean(score_moyen_fold_par_hyperparam)
     
     end = time.perf_counter() 
@@ -152,7 +168,7 @@ def Adaboost(df_data, datasets_name):
     f_mesures = []
     
     # ADABOOST   
-    for i in range(1,10):
+    for i in range(1,11):
         x_data,y_data = df_data
         x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
          
@@ -167,7 +183,7 @@ def Adaboost(df_data, datasets_name):
         accu_test_ada.append(accuracy_score(y_test, y_pred_test_ada))
         
         f_mesures.append(calcul_fmesure(y_test,y_pred_test_ada))
-    print(f_mesures)            
+             
     score_moyen_adaboost['train'] = (sum(accu_train_ada)/len(accu_train_ada))
     score_moyen_adaboost['test'] = (sum(accu_test_ada)/len(accu_test_ada))  
     
@@ -193,12 +209,12 @@ def GradientBoosting(df_data, datasets_name):
     model = GradientBoostingClassifier()
     f_mesures = []
     
-    for i in(1,10): 
+    for i in range(1,11): 
         x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
         model.fit(x_train,y_train)
         y_predict = model.predict(x_test)
         f_mesures.append(calcul_fmesure(y_test, y_predict))
-    print(f_mesures)
+  
     f_mesure = np.mean(f_mesures)
     std_f_mesure = np.std(f_mesures)
     
@@ -227,12 +243,12 @@ def Arbre_de_decision(df_data, datasets_name):
     model = DecisionTreeClassifier()
     f_mesures = []
     
-    for i in range(1,10):
+    for i in range(1,11):
         x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
         model.fit(x_train,y_train)
         y_predict = model.predict(x_test)
         f_mesures.append(calcul_fmesure(y_test, y_predict))    
-    
+        
     f_mesure = np.mean(f_mesures)
     std_f_mesure = np.std(f_mesures)
     
@@ -257,16 +273,14 @@ def Knn(df_data, datasets_name):
     
     accuracy_scores = []
     f_mesures = []
-    for i in range(1,10):
+    for i in range(1,11):
         x_data,y_data = df_data
         x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
-        knn = KNeighborsRegressor(n_neighbors=i)               
+        knn = KNeighborsClassifier(n_neighbors=i)               
         knn.fit(x_train,y_train)
         y_predict = knn.predict(x_test)
         
-        print(y_predict)
-        # f_mesures.append(calcul_fmesure(y_test, y_predict))
-        f_mesures.append(0)
+        f_mesures.append(calcul_fmesure(y_test, y_predict))
         accuracy_scores.append(knn.score(x_test, y_test))
           
     f_mesure = mean(f_mesures)
@@ -289,38 +303,58 @@ def classement_par_algo(accuracy_values):
         output[x] = i
     return output
 
-def remplissage_pied_dataframe(df,data):
-   
-    df = df._append({'Datasets': data[0],
-                        'SVM linear': data[1],
-                        'SVM poly': data[2],
-                        'SVM gauss': data[3],
-                        'KNN': data[4],
-                        'Arbre de decision': data[5],
-                        'Adaboost': data[6],
-                        'Gradient boosting': data[7],
-                        'Temps Traitement': data[8],
-                        'SVM linear std': np.nan,
-                        'SVM poly std': np.nan,
-                        'SVM gauss std': np.nan,
-                        'KNN std': np.nan,
-                        'Arbre de decision std': np.nan,
-                        'Adaboost std': data[6],
-                        'Gradient boosting std': np.nan,
-                        'Temps Traitement std': np.nan,
-                  }
-                  ,ignore_index=True
-                 )
+def remplissage_pied_dataframe(df,data, type_remplissage):
+    if type_remplissage == "rank":
+        df = df._append({'Datasets': data[0],
+                            'SVM linear': data[1],
+                            'SVM linear std': np.nan,
+                            'SVM poly': data[2],
+                            'SVM poly std': np.nan,
+                            'SVM gauss': data[3],
+                            'SVM gauss std': np.nan,
+                            'KNN': data[4],
+                            'KNN std': np.nan,
+                            'Arbre de decision': data[5],
+                            'Arbre de decision std': np.nan,
+                            'Adaboost': data[6],
+                            'Adaboost std': np.nan,
+                            'Gradient boosting': data[7],
+                            'Gradient boosting std': np.nan,
+                            'Temps Traitement': data[8],
+                      }
+                      ,ignore_index=True
+                     )
+    else:
+        df = df._append({'Datasets': data[0],
+                            'SVM linear': data[1],
+                            'SVM linear std':data[2],
+                            'SVM poly': data[3],
+                            'SVM poly std': data[4],
+                            'SVM gauss': data[5],
+                            'SVM gauss std': data[6],
+                            'KNN': data[7],
+                            'KNN std': data[8],
+                            'Arbre de decision': data[9],
+                            'Arbre de decision std': data[10],
+                            'Adaboost': data[11],
+                            'Adaboost std': data[12],
+                            'Gradient boosting': data[13],
+                            'Gradient boosting std': data[14],
+                            'Temps Traitement': data[15],
+                      }
+                      ,ignore_index=True
+                     )    
     return df
 
 
 def affichage_resultat(tab_resultat):
     # entete du dataframe
-    df = pd.DataFrame(columns=['Datasets','SVM linear', 'SVM linear std ','SVM poly','SVM poly std',
-                               'SVM gauss', 'SVM gauss std ','KNN', 'KNN std', 'Arbre de decision', 'Arbre de decision std',
+    df = pd.DataFrame(columns=['Datasets','SVM linear', 'SVM linear std','SVM poly','SVM poly std',
+                               'SVM gauss', 'SVM gauss std','KNN', 'KNN std', 'Arbre de decision', 'Arbre de decision std',
                                'Adaboost','Adaboost std','Gradient boosting', 'Gradient boosting std',
                                'Temps Traitement' ]) 
-    
+    df.to_csv(r'resultat_apprentissage0.csv',index=False,sep=';')    
+
     for dataset_name, res in tab_resultat.items():
                 
         rapport_maj_min = res["major_mino"] * 100
@@ -343,22 +377,30 @@ def affichage_resultat(tab_resultat):
         gradient_boosting_value_std = res["Gradient Boosting std"]
         
         
-        valeurs = [svm_linear_value,svm_poly_value,svm_gauss_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value]
-        
-        Average_Rank = [classement_par_algo(valeurs)]
+        valeurs_rank = [svm_linear_value,svm_poly_value,svm_gauss_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value]
+        Average_Rank = [classement_par_algo(valeurs_rank)]
         
         df = df._append({'Datasets': percent_maj_min + " " + dataset_name,
                         'SVM linear': svm_linear_value,
+                        'SVM linear std': svm_linear_value_std,
                         'SVM poly': svm_poly_value,
+                        'SVM poly std': svm_poly_value_std,
                         'SVM gauss': svm_gauss_value,
+                        'SVM gauss std': svm_gauss_value_std,
                         'KNN': knn_value, 
+                        'KNN std': knn_value_std, 
                         'Arbre de decision': arbre_decision_value,
+                        'Arbre de decision std': arbre_decision_value_std,
                         'Adaboost': adaboost_value,
+                        'Adaboost std': adaboost_value_std ,
                         'Gradient boosting': gradient_boosting_value,
+                        'Gradient boosting std': gradient_boosting_value_std,
                         'Temps Traitement': Temps_traitement,
                   }
                   ,ignore_index=True
                  )
+        
+    df.to_csv(r'resultat_apprentissage1.csv',index=False,sep=';')    
     # moyenne
     mean_svm_linear = df.describe()["SVM linear"]["mean"]
     mean_svm_poly = df.describe()["SVM poly"]["mean"]
@@ -384,13 +426,14 @@ def affichage_resultat(tab_resultat):
    
     
     # pied du dataframe
-    mean_global =["Mean",mean_svm_linear, mean_svm_linear_std, mean_svm_poly, mean_svm_poly_std, 
+    mean_global =["Mean", mean_svm_linear, mean_svm_linear_std, mean_svm_poly, mean_svm_poly_std, 
                           mean_svm_gauss, mean_svm_gauss_std, mean_knn, mean_knn_std,
                           mean_arb_decision, mean_arb_decision_std, mean_adaboost, mean_adaboost_std, 
                           mean_gradient, mean_gradient_std, mean_temps]
-    df= remplissage_pied_dataframe(df, mean_global)
     
-    df= remplissage_pied_dataframe(df, Average_Rank)
+    
+    df= remplissage_pied_dataframe(df, mean_global,"mean")
+    df= remplissage_pied_dataframe(df, Average_Rank,"rank")
          
     df.to_csv(r'resultat_apprentissage.csv',index=False,sep=';')    
     df.style.map(color_negative_red) #applymap
