@@ -73,69 +73,72 @@ def SVM(df_data,datasets_name,kernel_type):
     start = time.perf_counter() 
     
     score_per_datasets = {}
+    f_mesures = []
     
     # split les données 30% en test et 70% en entrainement
-    x_data,y_data = df_data  
-    x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
-    
-    
-    #k fold (k ici = 5)
-    score_moyen_fold_par_hyperparam = []
-    # faut donner une grille hyperparametre
-    hyper_param = [1,2,4,6,10,12,16,18,20]
-    skf = StratifiedKFold(n_splits= 5, random_state=None, shuffle=True)
-    
-    for hp in hyper_param:
-        moyenne_k_fold = []
-        for i, (train_index, test_index) in enumerate(skf.split(x_train, y_train)):
-            x_learn = x_train[train_index]
-            y_learn = y_train[train_index]
-            x_valid = x_train[test_index]
-            y_valid = y_train[test_index]
-            
-            if kernel_type == "linear" :
-                clf = LinearSVC(C=hp, tol=1e-4, dual=False, max_iter=100)
-                clf.fit(x_learn,y_learn)
-                y_predict = clf.predict(x_valid)
-            
-            else :
-                #TROP LONG
-                # test modèle avec le meilleur hyperparamètre 
-                clf = svm.SVC(C=hp,kernel=kernel_type)
-                clf.fit(x_learn,y_learn)
-                # phase de prediction 
-                y_predict = clf.predict(x_valid)    
-
-            # moyenne de chaque fold
-            moyenne_k_fold.append(accuracy_score(y_valid, y_predict))
-        # Moyenne de chaque fold par hyperparamètre
-        score_moyen_fold_par_hyperparam.append(sum(moyenne_k_fold)/len(moyenne_k_fold))    
-    
-    # Meilleur Hyper Paramètre
-    meilleur_moyenne = max(score_moyen_fold_par_hyperparam)
-    index_meilleur_moyenne_hyperparam = score_moyen_fold_par_hyperparam.index(max(score_moyen_fold_par_hyperparam))
-    value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
-       
-    if kernel_type == "linear" :
-        clf = LinearSVC(C=value_hyper_param,tol=1e-4, max_iter=100)
-        clf.fit(x_learn,y_learn)
-        y_predict = clf.predict(x_test)
-    
-    else :
-        #TROP LONG
-        # test modèle avec le meilleur hyperparamètre 
-        clf = svm.SVC(C=value_hyper_param,kernel=kernel_type)
-        clf.fit(x_train,y_train)
-        # phase de prediction 
-        y_predict = clf.predict(x_test)  
+    for i in (1,10):
+        x_data,y_data = df_data  
+        x_train, x_test, y_train, y_test  = train_test_split(x_data,y_data, test_size=0.3,stratify=y_data,shuffle=True)
+        score_moyen_fold_par_hyperparam = []
+        # faut donner une grille hyperparametre
+        hyper_param = [1,2,4,6,10,12,16,18,20]
+        skf = StratifiedKFold(n_splits= 5, random_state=None, shuffle=True)
         
-    fmesure = calcul_fmesure(y_test,y_predict)
+        for hp in hyper_param:
+            moyenne_k_fold = []
+            for i, (train_index, test_index) in enumerate(skf.split(x_train, y_train)):
+                x_learn = x_train[train_index]
+                y_learn = y_train[train_index]
+                x_valid = x_train[test_index]
+                y_valid = y_train[test_index]
+                
+                if kernel_type == "linear" :
+                    clf = LinearSVC(C=hp, tol=1e-4, dual=False, max_iter=100)
+                    clf.fit(x_learn,y_learn)
+                    y_predict = clf.predict(x_valid)
+                
+                else :
+                    #TROP LONG
+                    # test modèle avec le meilleur hyperparamètre 
+                    clf = svm.SVC(C=hp,kernel=kernel_type)
+                    clf.fit(x_learn,y_learn)
+                    # phase de prediction 
+                    y_predict = clf.predict(x_valid)    
+    
+                # moyenne de chaque fold
+                moyenne_k_fold.append(accuracy_score(y_valid, y_predict))
+            # Moyenne de chaque fold par hyperparamètre
+            score_moyen_fold_par_hyperparam.append(sum(moyenne_k_fold)/len(moyenne_k_fold))    
+        
+        # Meilleur Hyper Paramètre
+        meilleur_moyenne = max(score_moyen_fold_par_hyperparam)
+        index_meilleur_moyenne_hyperparam = score_moyen_fold_par_hyperparam.index(max(score_moyen_fold_par_hyperparam))
+        value_hyper_param = hyper_param[index_meilleur_moyenne_hyperparam]
+           
+        if kernel_type == "linear" :
+            clf = LinearSVC(C=value_hyper_param,tol=1e-4, max_iter=100)
+            clf.fit(x_learn,y_learn)
+            y_predict = clf.predict(x_test)
+        
+        else :
+            #TROP LONG
+            # test modèle avec le meilleur hyperparamètre 
+            clf = svm.SVC(C=value_hyper_param,kernel=kernel_type)
+            clf.fit(x_train,y_train)
+            # phase de prediction 
+            y_predict = clf.predict(x_test)  
+            
+        f_mesures.append(calcul_fmesure(y_test,y_predict))
+    
+    f_mesure = mean(f_mesures)
+    std_f_mesure = std(f_mesures)
+    score_accuracy = mean(score_moyen_fold_par_hyperparam)
     
     end = time.perf_counter() 
     temps_algo = end - start
     print(f"Fin traitement SVM {kernel_type} pour {datasets_name} avec un temps de {temps_algo}")
     
-    return fmesure,temps_algo
+    return f_mesure,std_f_mesure,score_accuracy,temps_algo
 
 
 
@@ -297,6 +300,14 @@ def remplissage_pied_dataframe(df,data):
                         'Adaboost': data[6],
                         'Gradient boosting': data[7],
                         'Temps Traitement': data[8],
+                        'SVM linear std': np.nan,
+                        'SVM poly std': np.nan,
+                        'SVM gauss std': np.nan,
+                        'KNN std': np.nan,
+                        'Arbre de decision std': np.nan,
+                        'Adaboost std': data[6],
+                        'Gradient boosting std': np.nan,
+                        'Temps Traitement std': np.nan,
                   }
                   ,ignore_index=True
                  )
@@ -305,7 +316,10 @@ def remplissage_pied_dataframe(df,data):
 
 def affichage_resultat(tab_resultat):
     # entete du dataframe
-    df = pd.DataFrame(columns=['Datasets','SVM linear','SVM gauss','SVM poly','KNN','Arbre de decision','Adaboost','Gradient boosting','Temps Traitement' ])
+    df = pd.DataFrame(columns=['Datasets','SVM linear', 'SVM linear std ','SVM poly','SVM poly std',
+                               'SVM gauss', 'SVM gauss std ','KNN', 'KNN std', 'Arbre de decision', 'Arbre de decision std',
+                               'Adaboost','Adaboost std','Gradient boosting', 'Gradient boosting std',
+                               'Temps Traitement' ]) 
     
     for dataset_name, res in tab_resultat.items():
                 
@@ -329,8 +343,6 @@ def affichage_resultat(tab_resultat):
         gradient_boosting_value_std = res["Gradient Boosting std"]
         
         
-        
-        
         valeurs = [svm_linear_value,svm_poly_value,svm_gauss_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value]
         
         Average_Rank = [classement_par_algo(valeurs)]
@@ -339,7 +351,7 @@ def affichage_resultat(tab_resultat):
                         'SVM linear': svm_linear_value,
                         'SVM poly': svm_poly_value,
                         'SVM gauss': svm_gauss_value,
-                        'KNN': knn_value,
+                        'KNN': knn_value, 
                         'Arbre de decision': arbre_decision_value,
                         'Adaboost': adaboost_value,
                         'Gradient boosting': gradient_boosting_value,
@@ -347,7 +359,7 @@ def affichage_resultat(tab_resultat):
                   }
                   ,ignore_index=True
                  )
-    
+    # moyenne
     mean_svm_linear = df.describe()["SVM linear"]["mean"]
     mean_svm_poly = df.describe()["SVM poly"]["mean"]
     mean_svm_gauss = df.describe()["SVM gauss"]["mean"]
@@ -357,14 +369,25 @@ def affichage_resultat(tab_resultat):
     mean_gradient = df.describe()["Gradient boosting"]["mean"]
     mean_temps = df.describe()["Temps Traitement"]["mean"]
     
-    print(Average_Rank)
+    # moyenne ecart-type
+    mean_svm_linear_std = df.describe()["SVM linear std"]["mean"]
+    mean_svm_poly_std = df.describe()["SVM poly std"]["mean"]
+    mean_svm_gauss_std = df.describe()["SVM gauss std"]["mean"]
+    mean_knn_std = df.describe()["KNN std"]["mean"]
+    mean_arb_decision_std = df.describe()["Arbre de decision std"]["mean"]
+    mean_adaboost_std = df.describe()["Adaboost std"]["mean"]
+    mean_gradient_std = df.describe()["Gradient boosting std"]["mean"]
+    
     Average_Rank = [sum(x)/len(x) + 1  for x in zip(*Average_Rank)] # moyenne des classements (+1 pour que les classements commence à 1 plutôt que 0)
     Average_Rank.append(np.nan)
     Average_Rank.insert(0, "Average Rank")
    
     
     # pied du dataframe
-    mean_global =["Mean",mean_svm_linear,mean_svm_poly,mean_svm_gauss,mean_knn,mean_arb_decision,mean_adaboost,mean_gradient,mean_temps]
+    mean_global =["Mean",mean_svm_linear, mean_svm_linear_std, mean_svm_poly, mean_svm_poly_std, 
+                          mean_svm_gauss, mean_svm_gauss_std, mean_knn, mean_knn_std,
+                          mean_arb_decision, mean_arb_decision_std, mean_adaboost, mean_adaboost_std, 
+                          mean_gradient, mean_gradient_std, mean_temps]
     df= remplissage_pied_dataframe(df, mean_global)
     
     df= remplissage_pied_dataframe(df, Average_Rank)

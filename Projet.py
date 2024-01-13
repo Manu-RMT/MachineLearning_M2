@@ -22,7 +22,7 @@ all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 # "bankmarketing","australian", "pageblocks", 
 all_datasets_name = ["abalone20","autompg"]
 all_datasets_name = ["autompg"]
-all_datasets_name = ["abalone8"]
+# all_datasets_name = ["abalone8"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
 
@@ -61,17 +61,26 @@ for name in all_datasets_name:
     temps_traitement = []
     
     # SVM linear sur tous les datasets
-    stock_resultat[name]['SVM linear'], stock_resultat[name]['Temps'] =  SVM(dfs[name],name,"linear")
-    temps_traitement.append(stock_resultat[name]['Temps'] )
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"linear")
+    stock_resultat[name]['SVM linear'] = f_mesure
+    stock_resultat[name]['SVM linear std'] = std_f_mesure
+    stock_resultat[name]['SVM linear accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
    
     # SVM poly sur tous les datasets
-    stock_resultat[name]['SVM poly'] , stock_resultat[name]['Temps'] =  SVM(dfs[name],name,"poly")
-    temps_traitement.append(stock_resultat[name]['Temps'] )
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"poly")
+    stock_resultat[name]['SVM poly'] = f_mesure
+    stock_resultat[name]['SVM poly std'] = std_f_mesure
+    stock_resultat[name]['SVM poly accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
     
     # SVM gauss sur tous les datasets
-    stock_resultat[name]['SVM gauss'], stock_resultat[name]['Temps'] =  SVM(dfs[name],name,"rbf")
-    temps_traitement.append(stock_resultat[name]['Temps'] ) 
-    
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"rbf")
+    stock_resultat[name]['SVM gauss'] = f_mesure
+    stock_resultat[name]['SVM gauss std'] = std_f_mesure
+    stock_resultat[name]['SVM gauss accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
+        
     # knn 
     f_mesure,std_f_mesure,score_accuracy,temps_algo = Knn(dfs[name], name)
     stock_resultat[name]['knn'] = f_mesure
