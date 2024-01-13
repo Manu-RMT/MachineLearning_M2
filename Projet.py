@@ -20,7 +20,9 @@ all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 #                   "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # "bankmarketing","australian", "pageblocks", 
-# all_datasets_name = ["abalone8","abalone17"]
+all_datasets_name = ["abalone20","autompg"]
+all_datasets_name = ["autompg"]
+all_datasets_name = ["abalone8"]
 # dictionnaire de stockage des resultats
 stock_resultat = {}
 
@@ -56,26 +58,48 @@ for name in all_datasets_name:
         stock_resultat[name]["équilibré"] = True  # tableau des résultat équilibré
         stock_resultat[name]['type equilibrage'] = ""   
     
-    # SVM poly sur tous les datasets
-    stock_resultat[name]['SVM poly'] =  SVM(dfs[name],name,"poly")
-    
-    # SVM gauss sur tous les datasets
-    stock_resultat[name]['SVM gauss'] =  SVM(dfs[name],name,"rbf")
+    temps_traitement = []
     
     # SVM linear sur tous les datasets
-    stock_resultat[name]['SVM linear'] =  SVM(dfs[name],name,"linear")
-        
+    stock_resultat[name]['SVM linear'], stock_resultat[name]['Temps'] =  SVM(dfs[name],name,"linear")
+    temps_traitement.append(stock_resultat[name]['Temps'] )
+   
+    # SVM poly sur tous les datasets
+    stock_resultat[name]['SVM poly'] , stock_resultat[name]['Temps'] =  SVM(dfs[name],name,"poly")
+    temps_traitement.append(stock_resultat[name]['Temps'] )
+    
+    # SVM gauss sur tous les datasets
+    stock_resultat[name]['SVM gauss'], stock_resultat[name]['Temps'] =  SVM(dfs[name],name,"rbf")
+    temps_traitement.append(stock_resultat[name]['Temps'] ) 
+    
     # knn 
-    stock_resultat[name]['knn'] = Knn(dfs[name], name)
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = Knn(dfs[name], name)
+    stock_resultat[name]['knn'] = f_mesure
+    stock_resultat[name]['knn std'] = std_f_mesure
+    stock_resultat[name]['knn accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
     
     # Arbre de décisions
-    stock_resultat[name]['forets aleatoires'] = Arbre_de_decision(dfs[name], name)
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = Arbre_de_decision(dfs[name], name)
+    stock_resultat[name]['forets aleatoires'] = f_mesure
+    stock_resultat[name]['forets aleatoires std'] = std_f_mesure
+    stock_resultat[name]['forets aleatoires accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
     
     # Adaboost
-    stock_resultat[name]['Adaboost'] = Adaboost(dfs[name], name)
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = Adaboost(dfs[name], name)
+    stock_resultat[name]['Adaboost'] = f_mesure
+    stock_resultat[name]['Adaboost std'] = std_f_mesure
+    stock_resultat[name]['Adaboost accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
     
     # Gradient Boosting 
-    stock_resultat[name]['Gradient Boosting'] = GradientBoosting(dfs[name], name)
-
-
-affichage_resultat(stock_resultat)
+    f_mesure,std_f_mesure,score_accuracy,temps_algo =  GradientBoosting(dfs[name], name)
+    stock_resultat[name]['Gradient Boosting'] = f_mesure
+    stock_resultat[name]['Gradient Boosting std'] = std_f_mesure
+    stock_resultat[name]['Gradient Boosting accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
+    
+    stock_resultat[name]['Temps global'] = np.mean(temps_traitement)
+    
+resultat_final = affichage_resultat(stock_resultat)
