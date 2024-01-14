@@ -153,7 +153,7 @@ def SVM(df_data,datasets_name,kernel_type):
         f_mesures.append(calcul_fmesure(y_test,y_predict))
 
     f_mesure = mean(f_mesures)
-    std_f_mesure = mean(f_mesures)
+    std_f_mesure = std(f_mesures)
     score_accuracy = mean(score_moyen_fold_par_hyperparam)
     
     
@@ -344,7 +344,7 @@ def affichage_resultat(tab_resultat):
                                'SVM gauss', 'SVM gauss std','KNN', 'KNN std', 'Arbre de decision', 'Arbre de decision std',
                                'Adaboost','Adaboost std','Gradient boosting', 'Gradient boosting std',
                                'Temps Traitement' ]) 
-
+    Average_Rank=[]
     for dataset_name, res in tab_resultat.items():
                 
         rapport_maj_min = res["major_mino"] * 100
@@ -368,7 +368,7 @@ def affichage_resultat(tab_resultat):
         
         
         valeurs_rank = [svm_linear_value,svm_poly_value,svm_gauss_value,knn_value,arbre_decision_value,adaboost_value,gradient_boosting_value]
-        Average_Rank = [classement_par_algo(valeurs_rank)]
+        Average_Rank.append(classement_par_algo(valeurs_rank))
         
         df = df._append({'Datasets': percent_maj_min + " " + dataset_name,
                         'SVM linear': svm_linear_value,
@@ -393,10 +393,8 @@ def affichage_resultat(tab_resultat):
 
     # moyenne
     mean_svm_linear = df.describe()["SVM linear"]["mean"]
-    mean_svm_poly = 0
-    mean_svm_gauss = 0
-    # mean_svm_poly = df.describe()["SVM poly"]["mean"]
-    # mean_svm_gauss = df.describe()["SVM gauss"]["mean"]
+    mean_svm_poly = df.describe()["SVM poly"]["mean"]
+    mean_svm_gauss = df.describe()["SVM gauss"]["mean"]
     mean_knn = df.describe()["KNN"]["mean"]
     mean_arb_decision = df.describe()["Arbre de decision"]["mean"]
     mean_adaboost = df.describe()["Adaboost"]["mean"]
@@ -405,10 +403,8 @@ def affichage_resultat(tab_resultat):
     
     # moyenne ecart-type
     mean_svm_linear_std = df.describe()["SVM linear std"]["mean"]
-    mean_svm_poly_std = 0
-    mean_svm_gauss_std = 0
-    # mean_svm_poly_std = df.describe()["SVM poly std"]["mean"]
-    # mean_svm_gauss_std = df.describe()["SVM gauss std"]["mean"]
+    mean_svm_poly_std = df.describe()["SVM poly std"]["mean"]
+    mean_svm_gauss_std = df.describe()["SVM gauss std"]["mean"]
     mean_knn_std = df.describe()["KNN std"]["mean"]
     mean_arb_decision_std = df.describe()["Arbre de decision std"]["mean"]
     mean_adaboost_std = df.describe()["Adaboost std"]["mean"]

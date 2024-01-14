@@ -16,7 +16,7 @@ all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 
 
 # "bankmarketing","australian", "pageblocks", 
-# all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
+all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
 # all_datasets_name = ["autompg"]
 # all_datasets_name = ["abalone8"]
 # dictionnaire de stockage des resultats
@@ -64,33 +64,19 @@ for name in all_datasets_name:
     temps_traitement.append(temps_algo)
    
     # SVM poly sur tous les datasets
-    # f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"poly")
-    # stock_resultat[name]['SVM poly'] = f_mesure
-    # stock_resultat[name]['SVM poly std'] = std_f_mesure
-    # stock_resultat[name]['SVM poly accuracy'] = score_accuracy
-    # temps_traitement.append(temps_algo)
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"poly")
+    stock_resultat[name]['SVM poly'] = f_mesure
+    stock_resultat[name]['SVM poly std'] = std_f_mesure
+    stock_resultat[name]['SVM poly accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
     
-    # # SVM gauss sur tous les datasets
-    # f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"rbf")
-    # stock_resultat[name]['SVM gauss'] = f_mesure
-    # stock_resultat[name]['SVM gauss std'] = std_f_mesure
-    # stock_resultat[name]['SVM gauss accuracy'] = score_accuracy
-    # temps_traitement.append(temps_algo)
-   
-    # SVM poly sur tous les datasets
-    # f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"poly")
-    stock_resultat[name]['SVM poly'] = 0
-    stock_resultat[name]['SVM poly std'] = 0
-    stock_resultat[name]['SVM poly accuracy'] = 0
-    temps_traitement.append(0)
-    
-    # # SVM gauss sur tous les datasets
-    # f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"rbf")
-    stock_resultat[name]['SVM gauss'] = 0
-    stock_resultat[name]['SVM gauss std'] = 0
-    stock_resultat[name]['SVM gauss accuracy'] = 0
-    temps_traitement.append(0)
-        
+    # SVM gauss sur tous les datasets
+    f_mesure,std_f_mesure,score_accuracy,temps_algo = SVM(dfs[name],name,"rbf")
+    stock_resultat[name]['SVM gauss'] = f_mesure
+    stock_resultat[name]['SVM gauss std'] = std_f_mesure
+    stock_resultat[name]['SVM gauss accuracy'] = score_accuracy
+    temps_traitement.append(temps_algo)
+           
     # knn 
     f_mesure,std_f_mesure,score_accuracy,temps_algo = Knn(dfs[name], name)
     stock_resultat[name]['knn'] = f_mesure
