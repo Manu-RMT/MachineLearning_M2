@@ -16,7 +16,7 @@ all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 
 
 # "bankmarketing","australian", "pageblocks", 
-all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
+# all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
 # all_datasets_name = ["autompg"]
 # all_datasets_name = ["abalone8"]
 # dictionnaire de stockage des resultats
