@@ -20,7 +20,7 @@ all_datasets_name = ["abalone8","abalone17","abalone20","autompg",
 #                   "spambase","splice","vehicle","wdbc","wine",'wine4',"yeast3","yeast6"]
 
 # "bankmarketing","australian", "pageblocks", 
-all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
+# all_datasets_name = ["abalone8","abalone17","abalone20","autompg"]
 # all_datasets_name = ["autompg"]
 # all_datasets_name = ["abalone8"]
 # dictionnaire de stockage des resultats
@@ -90,9 +90,9 @@ for name in all_datasets_name:
     
     # Arbre de décisions
     f_mesure,std_f_mesure,score_accuracy,temps_algo = Arbre_de_decision(dfs[name], name)
-    stock_resultat[name]['forets aleatoires'] = f_mesure
-    stock_resultat[name]['forets aleatoires std'] = std_f_mesure
-    stock_resultat[name]['forets aleatoires accuracy'] = score_accuracy
+    stock_resultat[name]['arbre de decision'] = f_mesure
+    stock_resultat[name]['arbre de decision std'] = std_f_mesure
+    stock_resultat[name]['arbre de decision accuracy'] = score_accuracy
     temps_traitement.append(temps_algo)
     
     # Adaboost
