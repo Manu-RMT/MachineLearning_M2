@@ -344,7 +344,6 @@ def affichage_resultat(tab_resultat):
                                'SVM gauss', 'SVM gauss std','KNN', 'KNN std', 'Arbre de decision', 'Arbre de decision std',
                                'Adaboost','Adaboost std','Gradient boosting', 'Gradient boosting std',
                                'Temps Traitement' ]) 
-    df.to_csv(r'resultat_apprentissage0.csv',index=False,sep=';')    
 
     for dataset_name, res in tab_resultat.items():
                 
@@ -391,11 +390,13 @@ def affichage_resultat(tab_resultat):
                   ,ignore_index=True
                  )
         
-    df.to_csv(r'resultat_apprentissage1.csv',index=False,sep=';')    
+
     # moyenne
     mean_svm_linear = df.describe()["SVM linear"]["mean"]
-    mean_svm_poly = df.describe()["SVM poly"]["mean"]
-    mean_svm_gauss = df.describe()["SVM gauss"]["mean"]
+    mean_svm_poly = 0
+    mean_svm_gauss = 0
+    # mean_svm_poly = df.describe()["SVM poly"]["mean"]
+    # mean_svm_gauss = df.describe()["SVM gauss"]["mean"]
     mean_knn = df.describe()["KNN"]["mean"]
     mean_arb_decision = df.describe()["Arbre de decision"]["mean"]
     mean_adaboost = df.describe()["Adaboost"]["mean"]
@@ -404,8 +405,10 @@ def affichage_resultat(tab_resultat):
     
     # moyenne ecart-type
     mean_svm_linear_std = df.describe()["SVM linear std"]["mean"]
-    mean_svm_poly_std = df.describe()["SVM poly std"]["mean"]
-    mean_svm_gauss_std = df.describe()["SVM gauss std"]["mean"]
+    mean_svm_poly_std = 0
+    mean_svm_gauss_std = 0
+    # mean_svm_poly_std = df.describe()["SVM poly std"]["mean"]
+    # mean_svm_gauss_std = df.describe()["SVM gauss std"]["mean"]
     mean_knn_std = df.describe()["KNN std"]["mean"]
     mean_arb_decision_std = df.describe()["Arbre de decision std"]["mean"]
     mean_adaboost_std = df.describe()["Adaboost std"]["mean"]
@@ -431,7 +434,6 @@ def affichage_resultat(tab_resultat):
   
     return df
   
-    
     
 
 def color_negative_red(val):
